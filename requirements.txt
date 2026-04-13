@@ -1,0 +1,8 @@
+openai
+pydantic
+pip-audit
+detect-secrets
+anthropic
+python-dotenv
+Flask
+stellar-sdk
