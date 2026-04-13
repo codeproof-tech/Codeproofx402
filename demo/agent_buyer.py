@@ -1,12 +1,12 @@
 import requests
 import time
 import sys
-from stellar_sdk import Server, Keypair, TransactionBuilder, Network
+from stellar_sdk import Server, Keypair, TransactionBuilder, Network, Asset
 
 CODEPROOF_API = "http://127.0.0.1:8080/review"
 TARGET_REPO = "./demo_target"
 
-BUYER_SECRET = "SCCSIMNSVZWVVNZENEGNSAAANHJLETJJBSQXME2YBZE7IICRLSFT6FKV" 
+BUYER_SECRET = "SAHMCM7IBMKIIBDLK73VD3YL3KLZIO7ERNMPCKF7TLOKQEFAMJCX2B6L" 
 
 def pay_invoice(invoice: dict) -> str:
     print("\n[Agent Buyer] 💸 Received HTTP 402 Payment Required.")
@@ -31,7 +31,7 @@ def pay_invoice(invoice: dict) -> str:
         )
         .append_payment_op(
             destination=invoice["recipient"],
-            asset_code="XLM",
+            asset=Asset.native(),
             amount=invoice["price"]
         )
         .add_text_memo(invoice["memo"])
@@ -59,9 +59,12 @@ def main():
         tx_hash = pay_invoice(invoice)
         
         print("\n[Agent Buyer] 🔄 Retrying request with X-Payment-Hash header...")
-        time.sleep(2)
+        time.sleep(4)
         
-        headers = {"X-Payment-Hash": tx_hash}
+        headers = {
+            "X-Payment-Hash": tx_hash,
+            "X-Request-Id": invoice["memo"]
+        }
         final_response = requests.post(CODEPROOF_API, json={"repo_dir": TARGET_REPO}, headers=headers)
         
         if final_response.status_code == 200:
